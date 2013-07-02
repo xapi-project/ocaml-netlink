@@ -14,7 +14,7 @@ let protocol_of_int = function
 
 let protocol = view ~read:protocol_of_int ~write:int_of_protocol int
 
-let libnl = Dl.dlopen ~filename:"libnl-3.so" ~flags:[Dl.RTLD_NOW]
+let libnl = Dl.dlopen ~filename:"libnl-3.so" ~flags:[Dl.RTLD_LAZY]
 
 let socket : socket structure typ = structure "nl_sock"
 
@@ -43,7 +43,7 @@ module Route = struct
 
 	let link_stat_id = view ~read:link_stat_id_of_int ~write:int_of_link_stat_id int
 
-	let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_NOW]
+	let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_LAZY]
 
 	let cache = ptr void
 	let link : link structure typ = structure "rtnl_link"
