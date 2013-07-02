@@ -15,6 +15,8 @@ let _ =
 	Printf.printf "TX bytes: %d\n" (Unsigned.UInt64.to_int tx_bytes);
 	let rx_bytes = Netlink.Route.link_get_stat link Netlink.Route.RX_BYTES in
 	Printf.printf "RX bytes: %d\n" (Unsigned.UInt64.to_int rx_bytes);
+	let rx_errors = Netlink.Route.link_get_stat link Netlink.Route.RX_ERRORS in
+	Printf.printf "RX errors: %d\n" (Unsigned.UInt64.to_int rx_errors);
 
 	let _ = Netlink.close s in
 	Netlink.socket_free s;

@@ -26,19 +26,23 @@ let close = foreign ~from:libnl "nl_close" (ptr socket @-> returning int)
 module Route = struct
 	type link
 
-	type link_stat_id = RX_PACKETS | TX_PACKETS | RX_BYTES | TX_BYTES
+	type link_stat_id = RX_PACKETS | TX_PACKETS | RX_BYTES | TX_BYTES | RX_ERRORS | TX_ERRORS
 
 	let int_of_link_stat_id = function
 		| RX_PACKETS -> 0
 		| TX_PACKETS -> 1
 		| RX_BYTES -> 2
 		| TX_BYTES -> 3
+		| RX_ERRORS -> 4
+		| TX_ERRORS -> 5
 
 	let link_stat_id_of_int = function
 		| 0 -> RX_PACKETS
 		| 1 -> TX_PACKETS
 		| 2 -> RX_BYTES
 		| 3 -> TX_BYTES
+		| 4 -> RX_ERRORS
+		| 5 -> TX_ERRORS
 		| _ -> invalid_arg "link_stat_id"
 
 	let link_stat_id = view ~read:link_stat_id_of_int ~write:int_of_link_stat_id int
