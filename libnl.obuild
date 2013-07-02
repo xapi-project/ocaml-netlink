@@ -1,0 +1,10 @@
+name: ocaml-libnl
+version: 0.1
+synopsis: Libnl bindings for OCaml
+obuild-ver: 1
+
+executable test
+  main: test.ml
+  src-dir: test
+  build-deps: ctypes.foreign
+
