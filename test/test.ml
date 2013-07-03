@@ -4,6 +4,8 @@ let _ =
 	let s = Socket.alloc () in
 	Socket.connect s Socket.NETLINK_ROUTE;
 
+	let cache = Link.cache_alloc s in
+
 	let print_link_info link =
 		let name = Link.get_name link in
 		print_endline name;
@@ -19,8 +21,12 @@ let _ =
 		Printf.printf "\tRX errors: %d\n" (Unsigned.UInt64.to_int rx_errors);
 		print_endline "";
 	in
-	let cache = Link.alloc_cache s in
-	Link.iter_cache print_link_info cache;
+	print_endline "== Print interfaces using Link.cache_iter ==\n";
+	Link.cache_iter print_link_info cache;
+
+	print_endline "== Print interfaces using Link.cache_to_list and List.iter ==\n";
+	let l = Link.cache_to_list cache in
+	List.iter print_link_info l;
 
 	Socket.close s;
 	Socket.free s

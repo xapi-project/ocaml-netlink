@@ -44,6 +44,20 @@ module Cache = struct
 			(t @-> funptr callback_t @-> ptr void @-> returning void) in
 		let f' x _ = f x in
 		foreach (!@ cache) f' null
+
+	let to_list cache ty =
+		let get_first = foreign ~from:libnl "nl_cache_get_first" (t @-> returning (ptr ty)) in
+		let get_prev = foreign ~from:libnl "nl_cache_get_prev" (ptr ty @-> returning (ptr ty)) in
+		let get_last = foreign ~from:libnl "nl_cache_get_last" (t @-> returning (ptr ty)) in
+
+		let first = get_first (!@ cache) in
+		let rec loop obj ac =
+			if obj = first then
+				obj :: ac
+			else
+				loop (get_prev obj) (obj :: ac)
+		in
+		loop (get_last (!@ cache)) []
 end
 
 module Link = struct
@@ -75,13 +89,16 @@ module Link = struct
 	let alloc_cache' = foreign ~from:libnl_route "rtnl_link_alloc_cache"
 		(ptr Socket.t @-> int @-> ptr Cache.t @-> returning int)
 
-	let alloc_cache s =
+	let cache_alloc s =
 		let cache = allocate Cache.t null in
 		let _ = alloc_cache' s 0 cache in
 		cache
 
-	let iter_cache f cache =
+	let cache_iter f cache =
 		Cache.iter f cache t
+
+	let cache_to_list cache =
+		Cache.to_list cache t
 
 	let get_by_name = foreign ~from:libnl_route "rtnl_link_get_by_name"
 		(Cache.t @-> string @-> returning (ptr t))
