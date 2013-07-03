@@ -1,34 +1,47 @@
 open Ctypes
 open Foreign
 
-type socket
-
-type protocol = NETLINK_ROUTE
-
-let int_of_protocol = function
-	| NETLINK_ROUTE -> 0
-
-let protocol_of_int = function
-	| 0 -> NETLINK_ROUTE
-	| _ -> invalid_arg "protocol"
-
-let protocol = view ~read:protocol_of_int ~write:int_of_protocol int
-
 let libnl = Dl.dlopen ~filename:"libnl-3.so" ~flags:[Dl.RTLD_LAZY]
+let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_LAZY]
 
-let socket : socket structure typ = structure "nl_sock"
+module Socket = struct
+	type t
+	let t : t structure typ = structure "nl_sock"
 
-let socket_alloc = foreign ~from:libnl "nl_socket_alloc" (void @-> returning (ptr socket))
-let socket_free = foreign ~from:libnl "nl_socket_free" (ptr socket @-> returning void)
-let connect = foreign ~from:libnl "nl_connect" (ptr socket @-> protocol @-> returning int)
-let close = foreign ~from:libnl "nl_close" (ptr socket @-> returning int)
+	type protocol = NETLINK_ROUTE
 
-module Route = struct
-	type link
+	let int_of_protocol = function
+		| NETLINK_ROUTE -> 0
 
-	type link_stat_id = RX_PACKETS | TX_PACKETS | RX_BYTES | TX_BYTES | RX_ERRORS | TX_ERRORS
+	let protocol_of_int = function
+		| 0 -> NETLINK_ROUTE
+		| _ -> invalid_arg "protocol"
 
-	let int_of_link_stat_id = function
+	let protocol = view ~read:protocol_of_int ~write:int_of_protocol int
+
+	let alloc = foreign ~from:libnl "nl_socket_alloc" (void @-> returning (ptr t))
+	let free = foreign ~from:libnl "nl_socket_free" (ptr t @-> returning void)
+	let connect = foreign ~from:libnl "nl_connect" (ptr t @-> protocol @-> returning int)
+	let close = foreign ~from:libnl "nl_close" (ptr t @-> returning int)
+end
+
+module Cache = struct
+	let t = ptr void
+
+	let iter f cache ty =
+		let callback_t = ptr ty @-> ptr void @-> returning void in
+		let foreach = foreign ~from:libnl "nl_cache_foreach"
+			(t @-> funptr callback_t @-> ptr void @-> returning void) in
+		let f' x _ = f x in
+		foreach (!@ cache) f' null
+end
+
+module Link = struct
+	type t
+
+	type stat_id = RX_PACKETS | TX_PACKETS | RX_BYTES | TX_BYTES | RX_ERRORS | TX_ERRORS
+
+	let int_of_stat_id = function
 		| RX_PACKETS -> 0
 		| TX_PACKETS -> 1
 		| RX_BYTES -> 2
@@ -36,32 +49,43 @@ module Route = struct
 		| RX_ERRORS -> 4
 		| TX_ERRORS -> 5
 
-	let link_stat_id_of_int = function
+	let stat_id_of_int = function
 		| 0 -> RX_PACKETS
 		| 1 -> TX_PACKETS
 		| 2 -> RX_BYTES
 		| 3 -> TX_BYTES
 		| 4 -> RX_ERRORS
 		| 5 -> TX_ERRORS
-		| _ -> invalid_arg "link_stat_id"
+		| _ -> invalid_arg "stat_id"
 
-	let link_stat_id = view ~read:link_stat_id_of_int ~write:int_of_link_stat_id int
+	let stat_id = view ~read:stat_id_of_int ~write:int_of_stat_id int
 
-	let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_LAZY]
+	let t : t structure typ = structure "rtnl_link"
 
-	let cache = ptr void
-	let link : link structure typ = structure "rtnl_link"
+	let alloc_cache' = foreign ~from:libnl_route "rtnl_link_alloc_cache"
+		(ptr Socket.t @-> int @-> ptr Cache.t @-> returning int)
 
-	let link_alloc_cache = foreign ~from:libnl_route "rtnl_link_alloc_cache"
-		(ptr socket @-> int @-> ptr cache @-> returning int)
+	let alloc_cache s =
+		let cache = allocate Cache.t null in
+		let _ = alloc_cache' s 0 cache in
+		cache
 
-	let link_get_by_name = foreign ~from:libnl_route "rtnl_link_get_by_name"
-		(cache @-> string @-> returning (ptr link))
+	let iter_cache f cache =
+		Cache.iter f cache t
 
-	let link_get_mtu = foreign ~from:libnl_route "rtnl_link_get_mtu"
-		(ptr link @-> returning int)
+	let get_by_name = foreign ~from:libnl_route "rtnl_link_get_by_name"
+		(Cache.t @-> string @-> returning (ptr t))
 
-	let link_get_stat = foreign ~from:libnl_route "rtnl_link_get_stat"
-		(ptr link @-> link_stat_id @-> returning uint64_t)
+	let put = foreign ~from:libnl_route "rtnl_link_put"
+		(ptr t @-> returning void)
+
+	let get_name = foreign ~from:libnl_route "rtnl_link_get_name"
+		(ptr t @-> returning string)
+
+	let get_mtu = foreign ~from:libnl_route "rtnl_link_get_mtu"
+		(ptr t @-> returning int)
+
+	let get_stat = foreign ~from:libnl_route "rtnl_link_get_stat"
+		(ptr t @-> stat_id @-> returning uint64_t)
 end
 

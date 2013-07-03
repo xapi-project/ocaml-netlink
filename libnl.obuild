@@ -11,6 +11,5 @@ library netlink
 executable test
   main: test.ml
   src-dir: test
-  #build-deps: ctypes.foreign
   build-deps: netlink
 

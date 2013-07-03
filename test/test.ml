@@ -1,24 +1,27 @@
-open Ctypes
+open Netlink
 
 let _ =
-	print_endline "started.";
-	let s = Netlink.socket_alloc () in
-	let _ = Netlink.connect s Netlink.NETLINK_ROUTE in
+	let s = Socket.alloc () in
+	let _ = Socket.connect s Socket.NETLINK_ROUTE in
 
-	let cache = allocate Netlink.Route.cache null in
-	let _ = Netlink.Route.link_alloc_cache s 0 cache in
-	let link = Netlink.Route.link_get_by_name (!@ cache) "eth0" in
-	let mtu = Netlink.Route.link_get_mtu link in
-	Printf.printf "MTU: %d\n" mtu;
+	let print_link_info link =
+		let name = Link.get_name link in
+		print_endline name;
 
-	let tx_bytes = Netlink.Route.link_get_stat link Netlink.Route.TX_BYTES in
-	Printf.printf "TX bytes: %d\n" (Unsigned.UInt64.to_int tx_bytes);
-	let rx_bytes = Netlink.Route.link_get_stat link Netlink.Route.RX_BYTES in
-	Printf.printf "RX bytes: %d\n" (Unsigned.UInt64.to_int rx_bytes);
-	let rx_errors = Netlink.Route.link_get_stat link Netlink.Route.RX_ERRORS in
-	Printf.printf "RX errors: %d\n" (Unsigned.UInt64.to_int rx_errors);
+		let mtu = Link.get_mtu link in
+		Printf.printf "\tMTU: %d\n" mtu;
 
-	let _ = Netlink.close s in
-	Netlink.socket_free s;
-	print_endline "done."
+		let tx_bytes = Link.get_stat link Link.TX_BYTES in
+		Printf.printf "\tTX bytes: %d\n" (Unsigned.UInt64.to_int tx_bytes);
+		let rx_bytes = Link.get_stat link Link.RX_BYTES in
+		Printf.printf "\tRX bytes: %d\n" (Unsigned.UInt64.to_int rx_bytes);
+		let rx_errors = Link.get_stat link Link.RX_ERRORS in
+		Printf.printf "\tRX errors: %d\n" (Unsigned.UInt64.to_int rx_errors);
+		print_endline "";
+	in
+	let cache = Link.alloc_cache s in
+	Link.iter_cache print_link_info cache;
+
+	let _ = Socket.close s in
+	Socket.free s
 
