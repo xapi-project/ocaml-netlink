@@ -1,6 +1,25 @@
 open Ctypes
 open Foreign
 
+(* --- to be upstreamed to ctypes --- *)
+let castp typ p = from_voidp typ (to_voidp p)
+
+let read_nullable t p =
+  if p = null then None
+    else Some !@(castp t (allocate (ptr void) p))
+
+let write_nullable t = function
+  | None -> null
+  | Some f -> !@(castp (ptr void) (allocate t f))
+
+let nullable_view t =
+  let read = read_nullable t
+    and write = write_nullable t in
+  view ~read ~write (ptr void)
+
+let string_opt = nullable_view string
+(* --- *)
+
 let libnl = Dl.dlopen ~filename:"libnl-3.so" ~flags:[Dl.RTLD_LAZY]
 let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_LAZY]
 
@@ -38,6 +57,10 @@ end
 module Cache = struct
 	let t = ptr void
 
+	let free' = foreign ~from:libnl "nl_cache_free"
+		(t @-> returning void)
+	let free cache = free' (!@ cache)
+
 	let iter f cache ty =
 		let callback_t = ptr ty @-> ptr void @-> returning void in
 		let foreach = foreign ~from:libnl "nl_cache_foreach"
@@ -59,6 +82,16 @@ module Cache = struct
 		in
 		loop (get_last (!@ cache)) []
 end
+
+type addr
+let addr : addr structure typ = structure "nl_addr"
+
+let addr_to_string' = foreign ~from:libnl "nl_addr2str"
+	(ptr addr @-> string @-> returning string)
+
+let addr_to_string addr =
+	let buf = String.make 128 ' ' in
+	addr_to_string' addr buf
 
 module Link = struct
 	type t
@@ -106,6 +139,9 @@ module Link = struct
 	let put = foreign ~from:libnl_route "rtnl_link_put"
 		(ptr t @-> returning void)
 
+	let get_ifindex = foreign ~from:libnl_route "rtnl_link_get_ifindex"
+		(ptr t @-> returning int)
+
 	let get_name = foreign ~from:libnl_route "rtnl_link_get_name"
 		(ptr t @-> returning string)
 
@@ -114,5 +150,35 @@ module Link = struct
 
 	let get_stat = foreign ~from:libnl_route "rtnl_link_get_stat"
 		(ptr t @-> stat_id @-> returning uint64_t)
+
+	let get_addr = foreign ~from:libnl_route "rtnl_link_get_addr"
+		(ptr t @-> returning (ptr addr))
 end
 
+module Address = struct
+	type t
+	let t : t structure typ = structure "rtnl_addr"
+
+	let alloc_cache' = foreign ~from:libnl_route "rtnl_addr_alloc_cache"
+		(ptr Socket.t @-> ptr Cache.t @-> returning int)
+
+	let cache_alloc s =
+		let cache = allocate Cache.t null in
+		let _ = alloc_cache' s cache in
+		cache
+
+	let cache_iter f cache =
+		Cache.iter f cache t
+
+	let cache_to_list cache =
+		Cache.to_list cache t
+
+	let get_ifindex = foreign ~from:libnl_route "rtnl_addr_get_ifindex"
+		(ptr t @-> returning int)
+
+	let get_label = foreign ~from:libnl_route "rtnl_addr_get_label"
+		(ptr t @-> returning string_opt)
+
+	let get_local = foreign ~from:libnl_route "rtnl_addr_get_local"
+		(ptr t @-> returning (ptr addr))
+end
