@@ -21,8 +21,18 @@ module Socket = struct
 
 	let alloc = foreign ~from:libnl "nl_socket_alloc" (void @-> returning (ptr t))
 	let free = foreign ~from:libnl "nl_socket_free" (ptr t @-> returning void)
-	let connect = foreign ~from:libnl "nl_connect" (ptr t @-> protocol @-> returning int)
-	let close = foreign ~from:libnl "nl_close" (ptr t @-> returning int)
+
+	exception Connect_failed
+
+	let connect' = foreign ~from:libnl "nl_connect" (ptr t @-> protocol @-> returning int)
+	let connect s p =
+		let ret = connect' s p in
+		if ret = 0 then
+			()
+		else
+			raise Connect_failed
+
+	let close = foreign ~from:libnl "nl_close" (ptr t @-> returning void)
 end
 
 module Cache = struct

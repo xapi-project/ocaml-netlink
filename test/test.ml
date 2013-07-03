@@ -2,7 +2,7 @@ open Netlink
 
 let _ =
 	let s = Socket.alloc () in
-	let _ = Socket.connect s Socket.NETLINK_ROUTE in
+	Socket.connect s Socket.NETLINK_ROUTE;
 
 	let print_link_info link =
 		let name = Link.get_name link in
@@ -22,6 +22,6 @@ let _ =
 	let cache = Link.alloc_cache s in
 	Link.iter_cache print_link_info cache;
 
-	let _ = Socket.close s in
+	Socket.close s;
 	Socket.free s
 
