@@ -1,0 +1,6 @@
+version = "0.1"
+requires = "ctypes.foreign"
+archive(byte) = "netlink.cma"
+archive(byte,plugin) = "netlink.cma"
+archive(native) = "netlink.cmxa"
+archive(native,plugin) = "netlink.cmxs"

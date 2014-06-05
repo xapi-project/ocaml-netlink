@@ -12,7 +12,7 @@ dist/setup:
 
 install:
 	ocamlfind remove netlink $(INSTALL_ARGS)
-	ocamlfind install netlink dist/build/lib-netlink/* $(INSTALL_ARGS)
+	ocamlfind install netlink lib/META dist/build/lib-netlink/* $(INSTALL_ARGS)
 
 uninstall:
 	ocamlfind remove netlink
