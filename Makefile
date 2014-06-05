@@ -1,3 +1,7 @@
+ifneq "$(DESTDIR)" ""
+INSTALL_ARGS := -destdir $(DESTDIR)
+endif
+
 .PHONY: build install uninstall clean
 
 build: dist/setup
@@ -7,8 +11,8 @@ dist/setup:
 	obuild configure
 
 install:
-	obuild install
-	ocamlfind install netlink dist/build/lib-netlink/*
+	ocamlfind remove netlink $(INSTALL_ARGS)
+	ocamlfind install netlink dist/build/lib-netlink/* $(INSTALL_ARGS)
 
 uninstall:
 	ocamlfind remove netlink
