@@ -20,8 +20,30 @@ let nullable_view t =
 let string_opt = nullable_view string
 (* --- *)
 
-let libnl = Dl.dlopen ~filename:"libnl-3.so" ~flags:[Dl.RTLD_LAZY]
-let libnl_route = Dl.dlopen ~filename:"libnl-route-3.so" ~flags:[Dl.RTLD_LAZY]
+(* The library names vary by distribution, so use a search list *)
+
+let libnl_names = [
+	"libnl-3.so";
+	"libnl-3.so.200"; (* Debian/Ubuntu *)
+]
+
+let libnl_route_names = [
+	"libnl-route-3.so";
+	"libnl-route-3.so.200"; (* Debian/Ubuntu *)
+]
+
+let dlopen ~filenames ~flags =
+	let rec loop = function
+	| [] -> failwith (Printf.sprintf "Failed to open any of these libraries: [ %s ] (is the package missing?)" (String.concat ", " filenames))
+	| n :: ns ->
+		try
+			Dl.dlopen ~filename:n ~flags
+		with _ ->
+			loop ns in
+	loop filenames
+
+let libnl = dlopen ~filenames:libnl_names ~flags:[Dl.RTLD_LAZY]
+let libnl_route = dlopen ~filenames:libnl_route_names ~flags:[Dl.RTLD_LAZY]
 
 module Socket = struct
 	type t
