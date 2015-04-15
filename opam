@@ -10,6 +10,7 @@ remove: [
 depends: [
   "ocamlfind"
   "ctypes"
+  "ctypes-foreign"
 ]
 os: [ "linux" ]
 depexts: [
