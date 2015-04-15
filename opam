@@ -1,0 +1,18 @@
+opam-version: "1"
+maintainer: "rob.hoes@citrix.com"
+build: [
+  [make]
+  [make "install"]
+]
+remove: [
+  [make "uninstall"]
+]
+depends: [
+  "ocamlfind"
+  "ctypes"
+]
+os: [ "linux" ]
+depexts: [
+ [ ["debian"] ["libnl-3" ] ]
+ [ ["ubuntu"] ["libnl-3-200" ] ]
+]

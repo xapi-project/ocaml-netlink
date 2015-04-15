@@ -1,6 +1,12 @@
-version = "0.1"
-requires = "ctypes.foreign"
+# OASIS_START
+# DO NOT EDIT (digest: dec9a64e0289f3e9a830b91a5b15e935)
+version = "0.9"
+description = "Bindings to libnl"
+requires = "ctypes ctypes.foreign"
 archive(byte) = "netlink.cma"
-archive(byte,plugin) = "netlink.cma"
+archive(byte, plugin) = "netlink.cma"
 archive(native) = "netlink.cmxa"
-archive(native,plugin) = "netlink.cmxs"
+archive(native, plugin) = "netlink.cmxs"
+exists_if = "netlink.cma"
+# OASIS_STOP
+
