@@ -1,0 +1,29 @@
+OASISFormat:  0.3
+Name:         netlink
+Version:      0.9
+Synopsis:     Bindings to libnl
+License:      LGPL-2.1 with OCaml linking exception
+Authors:      various
+Copyrights:   (C) 2015 Citrix
+BuildTools:   ocamlbuild
+Plugins:      DevFiles (0.3), META (0.3)
+
+Library               netlink
+  Path:               lib
+  Modules:            Netlink
+  BuildDepends:       ctypes, ctypes.foreign
+
+
+Executable lib_test
+  CompiledObject:     best
+  Path:               test
+  MainIs:             test.ml
+  Build$:             flag(tests)
+  Custom:             true
+  Install:            false
+  BuildDepends:       netlink
+
+Test lib_test
+  Run$:               flag(tests)
+  Command:            $lib_test
+  WorkingDirectory:   test
