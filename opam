@@ -6,6 +6,7 @@ build: [
 ]
 remove: [
   [make "uninstall"]
+  ["ocamlfind" "remove" "netlink"]
 ]
 depends: [
   "ocamlfind"
