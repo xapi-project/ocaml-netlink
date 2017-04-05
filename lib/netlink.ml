@@ -120,6 +120,8 @@ module Link = struct
 
 	type stat_id = RX_PACKETS | TX_PACKETS | RX_BYTES | TX_BYTES | RX_ERRORS | TX_ERRORS
 
+	exception AllocCacheError
+
 	let int_of_stat_id = function
 		| RX_PACKETS -> 0
 		| TX_PACKETS -> 1
@@ -146,8 +148,8 @@ module Link = struct
 
 	let cache_alloc s =
 		let cache = allocate Cache.t null in
-		let _ = alloc_cache' s 0 cache in
-		cache
+		let ret = alloc_cache' s 0 cache in
+		if ret = 0 then cache else raise AllocCacheError
 
 	let cache_iter f cache =
 		Cache.iter f cache t
