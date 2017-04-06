@@ -1,9 +1,9 @@
-opam-version: "1"
+opam-version: "1.2"
+authors: "rob.hoes@citrix.com"
 maintainer: "rob.hoes@citrix.com"
-build: [
-  [make]
-  [make "install"]
-]
+homepage: "https://github.com/xapi-project/ocaml-netlink"
+build: [make]
+install: [make "install"]
 remove: [
   [make "uninstall"]
   ["ocamlfind" "remove" "netlink"]
@@ -13,8 +13,7 @@ depends: [
   "ctypes"
   "ctypes-foreign"
 ]
-os: [ "linux" ]
 depexts: [
  [ ["debian"] ["libnl-3" ] ]
- [ ["ubuntu"] ["libnl-3-200" ] ]
+ [ ["ubuntu"] ["libnl-3-200" "libnl-route-3-200"] ]
 ]
