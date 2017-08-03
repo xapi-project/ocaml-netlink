@@ -4,7 +4,7 @@ maintainer: "rob.hoes@citrix.com"
 homepage: "https://github.com/xapi-project/ocaml-netlink"
 build: ["jbuilder" "build" "-p" name "-j" jobs]
 depends: [
-  "jbuilder"
+  "jbuilder" {build}
   "ctypes"
   "ctypes-foreign"
 ]
