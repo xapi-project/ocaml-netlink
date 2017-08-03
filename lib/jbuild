@@ -1,0 +1,10 @@
+(jbuild_version 1)
+
+(library
+ ((name netlink)
+  (public_name ocaml-netlink)
+  (libraries (ctypes
+              ctypes.foreign)
+  )
+ )
+)
