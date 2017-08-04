@@ -1,6 +1,6 @@
 (executable
  ((name test)
-  (libraries (ocaml-netlink))
+  (libraries (netlink))
   ))
   
 (alias

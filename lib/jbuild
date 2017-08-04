@@ -2,7 +2,7 @@
 
 (library
  ((name netlink)
-  (public_name ocaml-netlink)
+  (public_name netlink)
   (libraries (ctypes
               ctypes.foreign)
   )
