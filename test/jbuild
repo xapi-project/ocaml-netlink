@@ -1,9 +1,0 @@
-(executable
- ((name test)
-  (libraries (netlink))
-  ))
-  
-(alias
- ((name   runtest)
-  (deps   (test.exe))
-  (action (run ${<}))))
