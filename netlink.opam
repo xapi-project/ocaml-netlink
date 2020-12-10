@@ -10,12 +10,9 @@ depends: [
   "dune" {build}
   "ctypes"
   "ctypes-foreign"
+  "conf-libnl3"
 ]
-depexts: [
-  ["libnl-3-200" "libnl-route-3-200"] {os-distribution = "debian"}
-  ["libnl-3-200" "libnl-route-3-200"] {os-distribution = "ubuntu"}
-  ["libnl3"] {os-distribution = "centos"}
-]
+
 synopsis: "Bindings to the Netlink Protocol Library Suite (libnl)"
 description: """
 The Netlink Protocol Library Suite (libnl, see
